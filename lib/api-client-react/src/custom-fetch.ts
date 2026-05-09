@@ -356,7 +356,16 @@ export async function customFetch<T = unknown>(
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
     }
+  } else {
+    // Fallback to localStorage if no getter is set
+    try {
+      const token = localStorage.getItem("jwt_token");
+      if (token && !headers.has("authorization")) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
+    } catch(e) {}
   }
+
 
   const requestInfo = { method, url: resolveUrl(input) };
 

@@ -1,22 +1,27 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: 청년일자리도약장려금 관리 시스템 API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: auth
+  - name: users
+  - name: businesses
+  - name: workers
+  - name: rounds
+  - name: notifications
+  - name: dashboard
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +29,991 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user info
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (admin only)
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get a user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /businesses:
+    get:
+      operationId: listBusinesses
+      tags: [businesses]
+      summary: List businesses
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: managerId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: search
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: status
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: List of businesses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Business"
+    post:
+      operationId: createBusiness
+      tags: [businesses]
+      summary: Create a new business
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BusinessInput"
+      responses:
+        "201":
+          description: Created business
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Business"
+
+  /businesses/{id}:
+    get:
+      operationId: getBusiness
+      tags: [businesses]
+      summary: Get a business by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Business
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Business"
+    patch:
+      operationId: updateBusiness
+      tags: [businesses]
+      summary: Update a business
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BusinessUpdate"
+      responses:
+        "200":
+          description: Updated business
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Business"
+    delete:
+      operationId: deleteBusiness
+      tags: [businesses]
+      summary: Delete a business
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # Workers — use flat query params only (no nested query params to avoid Orval collision)
+  /workers:
+    get:
+      operationId: listWorkers
+      tags: [workers]
+      summary: List workers (filtered by businessId)
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: search
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: round
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of workers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Worker"
+    post:
+      operationId: createWorker
+      tags: [workers]
+      summary: Create a worker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkerInput"
+      responses:
+        "201":
+          description: Created worker
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Worker"
+
+  /workers/{id}:
+    get:
+      operationId: getWorker
+      tags: [workers]
+      summary: Get a worker by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Worker with rounds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkerDetail"
+    patch:
+      operationId: updateWorker
+      tags: [workers]
+      summary: Update a worker
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkerUpdate"
+      responses:
+        "200":
+          description: Updated worker
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Worker"
+    delete:
+      operationId: deleteWorker
+      tags: [workers]
+      summary: Delete a worker
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /workers/{id}/resign:
+    post:
+      operationId: resignWorker
+      tags: [workers]
+      summary: Process worker resignation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResignInput"
+      responses:
+        "200":
+          description: Resigned worker
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Worker"
+
+  /rounds:
+    get:
+      operationId: listRounds
+      tags: [rounds]
+      summary: List rounds with filters
+      parameters:
+        - name: workerId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: businessId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: status
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: roundNumber
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: dueSoon
+          in: query
+          schema:
+            type: ["boolean", "null"]
+      responses:
+        "200":
+          description: List of rounds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubsidyRound"
+    post:
+      operationId: createRound
+      tags: [rounds]
+      summary: Create a subsidy round for a worker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoundInput"
+      responses:
+        "201":
+          description: Created round
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubsidyRound"
+
+  /rounds/{id}:
+    patch:
+      operationId: updateRound
+      tags: [rounds]
+      summary: Update a subsidy round
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoundUpdate"
+      responses:
+        "200":
+          description: Updated round
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubsidyRound"
+
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List notifications
+      parameters:
+        - name: unreadOnly
+          in: query
+          schema:
+            type: ["boolean", "null"]
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /notifications/send-slack:
+    post:
+      operationId: sendSlackNotification
+      tags: [notifications]
+      summary: Trigger Slack notifications
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SlackSendResult"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Dashboard summary stats
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/manager-stats:
+    get:
+      operationId: getManagerStats
+      tags: [dashboard]
+      summary: Stats per manager
+      responses:
+        "200":
+          description: Manager stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ManagerStat"
+
+  /dashboard/upcoming-rounds:
+    get:
+      operationId: getUpcomingRounds
+      tags: [dashboard]
+      summary: Rounds due this week
+      responses:
+        "200":
+          description: Upcoming rounds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubsidyRound"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    AuthToken:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      required: [id, username, name, role, createdAt]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager]
+        createdAt:
+          type: string
+
+    UserInput:
+      type: object
+      required: [username, password, name, role]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager]
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        password:
+          type: ["string", "null"]
+        role:
+          type: ["string", "null"]
+
+    Business:
+      type: object
+      required: [id, name, representativeName, businessNumber, applicationYear, managerId, managerName, status, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        representativeName:
+          type: string
+        businessNumber:
+          type: string
+        foundedDate:
+          type: ["string", "null"]
+        representativeResidentNumber:
+          type: ["string", "null"]
+        representativePhone:
+          type: ["string", "null"]
+        certPassword:
+          type: ["string", "null"]
+        managerName:
+          type: string
+        managerId:
+          type: integer
+        operatingAgency:
+          type: ["string", "null"]
+        operatingAgencyPhone:
+          type: ["string", "null"]
+        applicationYear:
+          type: integer
+        bankName:
+          type: ["string", "null"]
+        accountNumber:
+          type: ["string", "null"]
+        status:
+          type: string
+        workerCount:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    BusinessInput:
+      type: object
+      required: [name, representativeName, businessNumber, applicationYear, managerId, managerName, status]
+      properties:
+        name:
+          type: string
+        representativeName:
+          type: string
+        businessNumber:
+          type: string
+        foundedDate:
+          type: ["string", "null"]
+        representativeResidentNumber:
+          type: ["string", "null"]
+        representativePhone:
+          type: ["string", "null"]
+        certPassword:
+          type: ["string", "null"]
+        managerName:
+          type: string
+        managerId:
+          type: integer
+        operatingAgency:
+          type: ["string", "null"]
+        operatingAgencyPhone:
+          type: ["string", "null"]
+        applicationYear:
+          type: integer
+        bankName:
+          type: ["string", "null"]
+        accountNumber:
+          type: ["string", "null"]
+        status:
+          type: string
+
+    BusinessUpdate:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        representativeName:
+          type: ["string", "null"]
+        businessNumber:
+          type: ["string", "null"]
+        foundedDate:
+          type: ["string", "null"]
+        representativeResidentNumber:
+          type: ["string", "null"]
+        representativePhone:
+          type: ["string", "null"]
+        certPassword:
+          type: ["string", "null"]
+        managerName:
+          type: ["string", "null"]
+        managerId:
+          type: ["integer", "null"]
+        operatingAgency:
+          type: ["string", "null"]
+        operatingAgencyPhone:
+          type: ["string", "null"]
+        applicationYear:
+          type: ["integer", "null"]
+        bankName:
+          type: ["string", "null"]
+        accountNumber:
+          type: ["string", "null"]
+        status:
+          type: ["string", "null"]
+
+    Worker:
+      type: object
+      required: [id, businessId, name, hireDate, isMidJoiner, status, createdAt]
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        businessName:
+          type: ["string", "null"]
+        name:
+          type: string
+        hireDate:
+          type: string
+        residentNumber:
+          type: ["string", "null"]
+        isMidJoiner:
+          type: boolean
+        status:
+          type: string
+          enum: [active, resigned, completed]
+        resignDate:
+          type: ["string", "null"]
+        resignReason:
+          type: ["string", "null"]
+        canApplyAfterResign:
+          type: ["boolean", "null"]
+        createdAt:
+          type: string
+
+    WorkerInput:
+      type: object
+      required: [businessId, name, hireDate, isMidJoiner]
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        hireDate:
+          type: string
+        residentNumber:
+          type: ["string", "null"]
+        isMidJoiner:
+          type: boolean
+        status:
+          type: string
+
+    WorkerUpdate:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        hireDate:
+          type: ["string", "null"]
+        residentNumber:
+          type: ["string", "null"]
+        isMidJoiner:
+          type: ["boolean", "null"]
+        status:
+          type: ["string", "null"]
+
+    WorkerDetail:
+      type: object
+      required: [id, businessId, name, hireDate, isMidJoiner, status, createdAt, rounds]
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        businessName:
+          type: ["string", "null"]
+        name:
+          type: string
+        hireDate:
+          type: string
+        residentNumber:
+          type: ["string", "null"]
+        isMidJoiner:
+          type: boolean
+        status:
+          type: string
+        resignDate:
+          type: ["string", "null"]
+        resignReason:
+          type: ["string", "null"]
+        canApplyAfterResign:
+          type: ["boolean", "null"]
+        createdAt:
+          type: string
+        rounds:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubsidyRound"
+
+    ResignInput:
+      type: object
+      required: [resignDate, resignReason]
+      properties:
+        resignDate:
+          type: string
+        resignReason:
+          type: string
+        canApplyAfterResign:
+          type: boolean
+
+    SubsidyRound:
+      type: object
+      required: [id, workerId, businessId, roundNumber, dueDate, amount, status, createdAt]
+      properties:
+        id:
+          type: integer
+        workerId:
+          type: integer
+        businessId:
+          type: integer
+        workerName:
+          type: ["string", "null"]
+        businessName:
+          type: ["string", "null"]
+        managerName:
+          type: ["string", "null"]
+        roundNumber:
+          type: integer
+        dueDate:
+          type: string
+        amount:
+          type: integer
+        status:
+          type: string
+          enum: [scheduled, applied, paid, not_applied, resigned, not_applicable]
+        notes:
+          type: ["string", "null"]
+        round2NotApplied:
+          type: ["boolean", "null"]
+        createdAt:
+          type: string
+
+    RoundInput:
+      type: object
+      required: [workerId, roundNumber]
+      properties:
+        workerId:
+          type: integer
+        roundNumber:
+          type: integer
+        amount:
+          type: ["integer", "null"]
+
+    RoundUpdate:
+      type: object
+      properties:
+        status:
+          type: ["string", "null"]
+        amount:
+          type: ["integer", "null"]
+        notes:
+          type: ["string", "null"]
+
+    Notification:
+      type: object
+      required: [id, roundId, workerId, businessId, type, sentAt, isRead]
+      properties:
+        id:
+          type: integer
+        roundId:
+          type: integer
+        workerId:
+          type: integer
+        businessId:
+          type: integer
+        workerName:
+          type: ["string", "null"]
+        businessName:
+          type: ["string", "null"]
+        type:
+          type: string
+        message:
+          type: ["string", "null"]
+        sentAt:
+          type: string
+        isRead:
+          type: boolean
+
+    SlackSendResult:
+      type: object
+      required: [sent, total, message]
+      properties:
+        sent:
+          type: integer
+        total:
+          type: integer
+        message:
+          type: string
+
+    DashboardSummary:
+      type: object
+      required: [totalBusinesses, totalWorkers, totalRounds, pendingRounds, completedThisMonth, feeThisMonth, overdueRounds, upcomingThisWeek, businessesByYear, roundsByStatus]
+      properties:
+        totalBusinesses:
+          type: integer
+        totalWorkers:
+          type: integer
+        totalRounds:
+          type: integer
+        pendingRounds:
+          type: integer
+        completedThisMonth:
+          type: integer
+        feeThisMonth:
+          type: integer
+        overdueRounds:
+          type: integer
+        upcomingThisWeek:
+          type: integer
+        businessesByYear:
+          type: array
+          items:
+            $ref: "#/components/schemas/YearCount"
+        roundsByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/StatusCount"
+
+    YearCount:
+      type: object
+      required: [year, count]
+      properties:
+        year:
+          type: integer
+        count:
+          type: integer
+
+    StatusCount:
+      type: object
+      required: [status, count]
+      properties:
+        status:
+          type: string
+        count:
+          type: integer
+
+    ManagerStat:
+      type: object
+      required: [managerId, managerName, businessCount, workerCount, pendingRounds, completedRounds]
+      properties:
+        managerId:
+          type: integer
+        managerName:
+          type: string
+        businessCount:
+          type: integer
+        workerCount:
+          type: integer
+        pendingRounds:
+          type: integer
+        completedRounds:
+          type: integer
