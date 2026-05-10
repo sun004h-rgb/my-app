@@ -7,6 +7,7 @@ import workersRouter from "./workers";
 import roundsRouter from "./rounds";
 import notificationsRouter from "./notifications";
 import dashboardRouter from "./dashboard";
+import settingsRouter from "./settings";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(workersRouter);
 router.use(roundsRouter);
 router.use(notificationsRouter);
 router.use(dashboardRouter);
+router.use(settingsRouter);
 
 export default router;

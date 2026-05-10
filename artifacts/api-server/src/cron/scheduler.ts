@@ -3,6 +3,7 @@ import { db, subsidyRoundsTable, workersTable, businessesTable, usersTable, noti
 import { eq } from "drizzle-orm";
 import { sendSlackMessage } from "../lib/slack";
 import { logger } from "../lib/logger";
+import { getOrInitSettings } from "../routes/settings";
 
 export function startScheduler(): void {
   // Run every day at 9:00 AM
@@ -15,6 +16,14 @@ export function startScheduler(): void {
     const now = new Date();
 
     try {
+      // DB에서 알림 설정 로드
+      const settings = await getOrInitSettings();
+
+      if (!settings.slackEnabled) {
+        logger.info("Slack notifications disabled — skipping");
+        return;
+      }
+
       const rounds = await db
         .select({
           round: subsidyRoundsTable,
@@ -34,15 +43,15 @@ export function startScheduler(): void {
         const dDayMs = new Date(r.round.dueDate).getTime() - now.getTime();
         const dDays = Math.ceil(dDayMs / (1000 * 60 * 60 * 24));
 
-        // D-7: 7일 전 사전 알림
-        if (dDays === 7 || dDays === 0) return true;
+        // D-N: 사전 알림 (설정된 일수)
+        if (dDays === settings.advanceDays || dDays === 0) return true;
 
         if (dDays < 0) {
           const overdue = Math.abs(dDays);
-          // 3회차이고 도래일 1개월(30일) 초과: 매일 알림 (2개월=60일 신청불가 기준)
-          if (r.round.roundNumber === 3 && overdue > 30) return true;
-          // 그 외: 3일 간격 알림
-          if (overdue % 3 === 0) return true;
+          // 3회차이고 설정된 임계일 초과: 매일 알림
+          if (r.round.roundNumber === 3 && overdue > settings.round3UrgentThresholdDays) return true;
+          // 그 외: 설정된 간격으로 알림
+          if (overdue % settings.overdueIntervalDays === 0) return true;
         }
 
         return false;

@@ -15,6 +15,7 @@ tags:
   - name: rounds
   - name: notifications
   - name: dashboard
+  - name: settings
 
 paths:
   /healthz:
@@ -281,9 +282,8 @@ paths:
       parameters:
         - name: businessId
           in: query
-          required: true
           schema:
-            type: integer
+            type: ["integer", "null"]
         - name: status
           in: query
           schema:
@@ -532,6 +532,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SlackSendResult"
+
+  /settings/notifications:
+    get:
+      operationId: getNotificationSettings
+      tags: [settings]
+      summary: 알림 설정 조회
+      responses:
+        "200":
+          description: Notification settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettings"
+    put:
+      operationId: updateNotificationSettings
+      tags: [settings]
+      summary: 알림 설정 수정 (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationSettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettings"
 
   /dashboard/summary:
     get:
@@ -1000,6 +1030,51 @@ components:
           type: string
         count:
           type: integer
+
+    NotificationSettings:
+      type: object
+      required: [id, slackEnabled, advanceDays, overdueIntervalDays, round3UrgentThresholdDays, round3DeadlineDays, updatedAt]
+      properties:
+        id:
+          type: integer
+        slackEnabled:
+          type: boolean
+        advanceDays:
+          type: integer
+          description: "사전 알림 일수 (D-N일 전)"
+        overdueIntervalDays:
+          type: integer
+          description: "도래일 경과 후 기본 알림 간격 (일)"
+        round3UrgentThresholdDays:
+          type: integer
+          description: "3회차 매일 알림 시작 기준 (도래일 경과 일수)"
+        round3DeadlineDays:
+          type: integer
+          description: "3회차 신청 불가 기준 일수"
+        updatedAt:
+          type: string
+
+    NotificationSettingsUpdate:
+      type: object
+      properties:
+        slackEnabled:
+          type: boolean
+        advanceDays:
+          type: integer
+          minimum: 1
+          maximum: 30
+        overdueIntervalDays:
+          type: integer
+          minimum: 1
+          maximum: 30
+        round3UrgentThresholdDays:
+          type: integer
+          minimum: 1
+          maximum: 90
+        round3DeadlineDays:
+          type: integer
+          minimum: 1
+          maximum: 120
 
     ManagerStat:
       type: object

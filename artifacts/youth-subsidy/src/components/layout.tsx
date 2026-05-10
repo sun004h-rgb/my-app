@@ -43,6 +43,7 @@ const NAV_ITEMS = [
 
 const ADMIN_ITEMS = [
   { title: "사용자 관리", url: "/admin/users", icon: Settings },
+  { title: "알림 설정", url: "/admin/settings/notifications", icon: Bell },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {

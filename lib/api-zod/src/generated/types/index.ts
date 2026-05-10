@@ -20,6 +20,8 @@ export * from "./listWorkersParams";
 export * from "./loginInput";
 export * from "./managerStat";
 export * from "./notification";
+export * from "./notificationSettings";
+export * from "./notificationSettingsUpdate";
 export * from "./resignInput";
 export * from "./roundInput";
 export * from "./roundUpdate";

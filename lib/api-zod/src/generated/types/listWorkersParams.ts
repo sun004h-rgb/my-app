@@ -7,7 +7,10 @@
  */
 
 export type ListWorkersParams = {
-  businessId: number;
+  /**
+   * @nullable
+   */
+  businessId?: number | null;
   /**
    * @nullable
    */

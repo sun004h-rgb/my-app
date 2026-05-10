@@ -323,6 +323,44 @@ export interface DashboardSummary {
   roundsByStatus: StatusCount[];
 }
 
+export interface NotificationSettings {
+  id: number;
+  slackEnabled: boolean;
+  /** 사전 알림 일수 (D-N일 전) */
+  advanceDays: number;
+  /** 도래일 경과 후 기본 알림 간격 (일) */
+  overdueIntervalDays: number;
+  /** 3회차 매일 알림 시작 기준 (도래일 경과 일수) */
+  round3UrgentThresholdDays: number;
+  /** 3회차 신청 불가 기준 일수 */
+  round3DeadlineDays: number;
+  updatedAt: string;
+}
+
+export interface NotificationSettingsUpdate {
+  slackEnabled?: boolean;
+  /**
+   * @minimum 1
+   * @maximum 30
+   */
+  advanceDays?: number;
+  /**
+   * @minimum 1
+   * @maximum 30
+   */
+  overdueIntervalDays?: number;
+  /**
+   * @minimum 1
+   * @maximum 90
+   */
+  round3UrgentThresholdDays?: number;
+  /**
+   * @minimum 1
+   * @maximum 120
+   */
+  round3DeadlineDays?: number;
+}
+
 export interface ManagerStat {
   managerId: number;
   managerName: string;
@@ -352,7 +390,10 @@ export type ListBusinessesParams = {
 };
 
 export type ListWorkersParams = {
-  businessId: number;
+  /**
+   * @nullable
+   */
+  businessId?: number | null;
   /**
    * @nullable
    */

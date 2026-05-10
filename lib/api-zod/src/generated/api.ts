@@ -254,7 +254,7 @@ export const DeleteBusinessParams = zod.object({
  * @summary List workers (filtered by businessId)
  */
 export const ListWorkersQueryParams = zod.object({
-  businessId: zod.coerce.number(),
+  businessId: zod.coerce.number().nullish(),
   status: zod.coerce.string().nullish(),
   search: zod.coerce.string().nullish(),
   round: zod.coerce.number().nullish(),
@@ -532,6 +532,72 @@ export const SendSlackNotificationResponse = zod.object({
   sent: zod.number(),
   total: zod.number(),
   message: zod.string(),
+});
+
+/**
+ * @summary 알림 설정 조회
+ */
+export const GetNotificationSettingsResponse = zod.object({
+  id: zod.number(),
+  slackEnabled: zod.boolean(),
+  advanceDays: zod.number().describe("사전 알림 일수 (D-N일 전)"),
+  overdueIntervalDays: zod
+    .number()
+    .describe("도래일 경과 후 기본 알림 간격 (일)"),
+  round3UrgentThresholdDays: zod
+    .number()
+    .describe("3회차 매일 알림 시작 기준 (도래일 경과 일수)"),
+  round3DeadlineDays: zod.number().describe("3회차 신청 불가 기준 일수"),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary 알림 설정 수정 (admin only)
+ */
+export const updateNotificationSettingsBodyAdvanceDaysMax = 30;
+
+export const updateNotificationSettingsBodyOverdueIntervalDaysMax = 30;
+
+export const updateNotificationSettingsBodyRound3UrgentThresholdDaysMax = 90;
+
+export const updateNotificationSettingsBodyRound3DeadlineDaysMax = 120;
+
+export const UpdateNotificationSettingsBody = zod.object({
+  slackEnabled: zod.boolean().optional(),
+  advanceDays: zod
+    .number()
+    .min(1)
+    .max(updateNotificationSettingsBodyAdvanceDaysMax)
+    .optional(),
+  overdueIntervalDays: zod
+    .number()
+    .min(1)
+    .max(updateNotificationSettingsBodyOverdueIntervalDaysMax)
+    .optional(),
+  round3UrgentThresholdDays: zod
+    .number()
+    .min(1)
+    .max(updateNotificationSettingsBodyRound3UrgentThresholdDaysMax)
+    .optional(),
+  round3DeadlineDays: zod
+    .number()
+    .min(1)
+    .max(updateNotificationSettingsBodyRound3DeadlineDaysMax)
+    .optional(),
+});
+
+export const UpdateNotificationSettingsResponse = zod.object({
+  id: zod.number(),
+  slackEnabled: zod.boolean(),
+  advanceDays: zod.number().describe("사전 알림 일수 (D-N일 전)"),
+  overdueIntervalDays: zod
+    .number()
+    .describe("도래일 경과 후 기본 알림 간격 (일)"),
+  round3UrgentThresholdDays: zod
+    .number()
+    .describe("3회차 매일 알림 시작 기준 (도래일 경과 일수)"),
+  round3DeadlineDays: zod.number().describe("3회차 신청 불가 기준 일수"),
+  updatedAt: zod.string(),
 });
 
 /**

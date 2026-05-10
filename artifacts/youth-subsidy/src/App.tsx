@@ -18,6 +18,7 @@ import WorkerDetail from "@/pages/workers-detail";
 import Rounds from "@/pages/rounds";
 import Notifications from "@/pages/notifications";
 import AdminUsers from "@/pages/admin-users";
+import SettingsNotifications from "@/pages/settings-notifications";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ component: Component, requireAdmin = false }: { component: React.ComponentType, requireAdmin?: boolean }) {
@@ -81,6 +82,9 @@ function Router() {
       </Route>
       <Route path="/admin/users">
         {() => <ProtectedRoute component={AdminUsers} requireAdmin />}
+      </Route>
+      <Route path="/admin/settings/notifications">
+        {() => <ProtectedRoute component={SettingsNotifications} />}
       </Route>
       
       <Route component={NotFound} />
