@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { db, subsidyRoundsTable, workersTable, businessesTable, usersTable, notificationsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { sendSlackMessage } from "../lib/slack";
 import { logger } from "../lib/logger";
 
@@ -13,9 +13,6 @@ export function startScheduler(): void {
     const baseUrl = `https://${domain}`;
 
     const now = new Date();
-    const todayStr = now.toISOString().split("T")[0];
-    const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const in7DaysStr = in7Days.toISOString().split("T")[0];
 
     try {
       const rounds = await db
@@ -34,14 +31,20 @@ export function startScheduler(): void {
         .where(eq(subsidyRoundsTable.status, "scheduled"));
 
       const targetRounds = rounds.filter((r) => {
-        const due = r.round.dueDate;
-        // D-7: 7일 전 사전 알림
-        // D-Day(0): 신청 당일 알림
-        // D+3, D+6, D+9 ...: 도래일 경과 후 3일 간격 반복 알림
-        const dDayMs = new Date(due).getTime() - now.getTime();
+        const dDayMs = new Date(r.round.dueDate).getTime() - now.getTime();
         const dDays = Math.ceil(dDayMs / (1000 * 60 * 60 * 24));
+
+        // D-7: 7일 전 사전 알림
         if (dDays === 7 || dDays === 0) return true;
-        if (dDays < 0 && Math.abs(dDays) % 3 === 0) return true;
+
+        if (dDays < 0) {
+          const overdue = Math.abs(dDays);
+          // 3회차이고 도래일 1개월(30일) 초과: 매일 알림 (2개월=60일 신청불가 기준)
+          if (r.round.roundNumber === 3 && overdue > 30) return true;
+          // 그 외: 3일 간격 알림
+          if (overdue % 3 === 0) return true;
+        }
+
         return false;
       });
 
@@ -55,6 +58,7 @@ export function startScheduler(): void {
           dueDate: r.round.dueDate,
           managerName: r.managerName ?? "Unknown",
           workerUrl: `${baseUrl}/workers/${r.workerId}`,
+          siteUrl: baseUrl,
         });
 
         if (ok) {

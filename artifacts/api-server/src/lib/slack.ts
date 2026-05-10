@@ -10,6 +10,7 @@ export interface SlackMessage {
   dueDate: string;
   managerName: string;
   workerUrl: string;
+  siteUrl: string;
 }
 
 export async function sendSlackMessage(msg: SlackMessage): Promise<boolean> {
@@ -22,8 +23,12 @@ export async function sendSlackMessage(msg: SlackMessage): Promise<boolean> {
   const dDays = Math.ceil(dDayMs / (1000 * 60 * 60 * 24));
   const dDayLabel = dDays === 0 ? "D-Day" : dDays > 0 ? `D-${dDays}` : `D+${Math.abs(dDays)}`;
 
+  const urgency = dDays < 0 && msg.roundNumber === 3 && Math.abs(dDays) > 30
+    ? "⚠️ *[긴급] 3회차 신청기한 임박!*"
+    : "🔔 *청년일자리도약장려금 신청 알림*";
+
   const text = [
-    `🔔 *청년일자리도약장려금 신청 알림*`,
+    urgency,
     ``,
     `• 사업장: ${msg.businessName}`,
     `• 근로자: ${msg.workerName}`,
@@ -32,7 +37,7 @@ export async function sendSlackMessage(msg: SlackMessage): Promise<boolean> {
     `• 신청도래일: ${msg.dueDate} (${dDayLabel})`,
     `• 담당자: ${msg.managerName}`,
     ``,
-    `👉 <${msg.workerUrl}|근로자 상세 바로가기>`,
+    `👉 <${msg.workerUrl}|근로자 상세 바로가기>  |  <${msg.siteUrl}|관리 시스템 바로가기>`,
   ].join("\n");
 
   try {

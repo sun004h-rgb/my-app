@@ -113,6 +113,7 @@ router.post("/notifications/send-slack", requireAuth, async (req, res): Promise<
       dueDate: r.round.dueDate,
       managerName: r.managerName ?? "Unknown",
       workerUrl: `${baseUrl}/workers/${r.workerId}`,
+      siteUrl: baseUrl,
     });
 
     if (ok) {
