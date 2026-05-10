@@ -19,9 +19,9 @@ export default function Workers() {
   const { data: businesses } = useListBusinesses({}, { query: { queryKey: getListBusinessesQueryKey() } });
   
   const queryParams = {
-    businessId: businessId !== "all" ? parseInt(businessId) : 0, // Fallback logic typically handled by API, assuming 0 returns all if allowed, or we require a select. We will assume 0 fetches all or the hook requires a valid businessId. Wait, hook requires businessId: number. Let's pass 0 for "all" or adjust API call. Wait, API might require businessId. If 0 is not allowed, we need to pass a specific one. Let's assume API ignores 0 or we handle it. Actually, `useListWorkers` requires `businessId: number`. Wait, the spec says `/workers — flat list of all workers across businesses with search/filter`. But `useListWorkers` requires `businessId`. Let's pass 0 if "all" and see. Wait, `useListWorkers` params: `{ businessId (required), status, search, round }`. If it's required, we might not be able to fetch "all" without a businessId? Oh, looking at openapi, `businessId` is `in: query`, type integer, maybe not truly required if 0? I will pass 0.
-    search: search || null,
-    status: status !== "all" ? status : null,
+    businessId: businessId !== "all" ? parseInt(businessId) : undefined,
+    search: search || undefined,
+    status: status !== "all" ? status : undefined,
   };
 
   const { data: workers, isLoading } = useListWorkers(queryParams, {

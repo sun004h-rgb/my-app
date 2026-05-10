@@ -20,10 +20,10 @@ export default function Businesses() {
   const { data: users } = useListUsers({ query: { queryKey: getListUsersQueryKey() } });
   
   const queryParams = {
-    search: search || null,
-    year: year !== "all" ? parseInt(year) : null,
-    managerId: managerId !== "all" ? parseInt(managerId) : null,
-    status: status !== "all" ? status : null,
+    search: search || undefined,
+    year: year !== "all" ? parseInt(year) : undefined,
+    managerId: managerId !== "all" ? parseInt(managerId) : undefined,
+    status: status !== "all" ? status : undefined,
   };
 
   const { data: businesses, isLoading } = useListBusinesses(queryParams, {

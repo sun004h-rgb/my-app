@@ -35,10 +35,14 @@ export function startScheduler(): void {
 
       const targetRounds = rounds.filter((r) => {
         const due = r.round.dueDate;
-        // 7일 전, 당일, 또는 미완료 3일 후 재알림
+        // D-7: 7일 전 사전 알림
+        // D-Day(0): 신청 당일 알림
+        // D+3, D+6, D+9 ...: 도래일 경과 후 3일 간격 반복 알림
         const dDayMs = new Date(due).getTime() - now.getTime();
         const dDays = Math.ceil(dDayMs / (1000 * 60 * 60 * 24));
-        return dDays === 7 || dDays === 0 || dDays === -3;
+        if (dDays === 7 || dDays === 0) return true;
+        if (dDays < 0 && Math.abs(dDays) % 3 === 0) return true;
+        return false;
       });
 
       let sent = 0;
