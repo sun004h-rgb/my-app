@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, businessesTable, workersTable, subsidyRoundsTable, usersTable } from "@workspace/db";
-import { eq, and, count, sum, gte, lte, sql } from "drizzle-orm";
+import { eq, and, count, sum, gte, lte, sql, inArray } from "drizzle-orm";
 import { requireAuth } from "../lib/auth";
 
 const router: IRouter = Router();
@@ -126,7 +126,7 @@ router.get("/dashboard/manager-stats", requireAuth, async (_req, res): Promise<v
         const [wCount] = await db
           .select({ count: count() })
           .from(workersTable)
-          .where(sql`${workersTable.businessId} = ANY(${idList})`);
+          .where(inArray(workersTable.businessId, idList));
         workerCount = Number(wCount.count);
 
         const [pCount] = await db
@@ -134,7 +134,7 @@ router.get("/dashboard/manager-stats", requireAuth, async (_req, res): Promise<v
           .from(subsidyRoundsTable)
           .where(
             and(
-              sql`${subsidyRoundsTable.businessId} = ANY(${idList})`,
+              inArray(subsidyRoundsTable.businessId, idList),
               eq(subsidyRoundsTable.status, "scheduled")
             )
           );
@@ -145,7 +145,7 @@ router.get("/dashboard/manager-stats", requireAuth, async (_req, res): Promise<v
           .from(subsidyRoundsTable)
           .where(
             and(
-              sql`${subsidyRoundsTable.businessId} = ANY(${idList})`,
+              inArray(subsidyRoundsTable.businessId, idList),
               eq(subsidyRoundsTable.status, "paid")
             )
           );

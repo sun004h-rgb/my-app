@@ -12,6 +12,7 @@ export type SubsidyRoundStatus =
 export const SubsidyRoundStatus = {
   scheduled: "scheduled",
   applied: "applied",
+  completed: "completed",
   paid: "paid",
   not_applied: "not_applied",
   resigned: "resigned",

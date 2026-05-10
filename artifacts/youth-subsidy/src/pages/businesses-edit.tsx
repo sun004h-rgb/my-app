@@ -159,7 +159,77 @@ export default function BusinessEdit() {
                     <FormMessage />
                   </FormItem>
                 )} />
-                {/* Additional fields omitted for brevity but should be added in full implementation */}
+                  <FormField control={form.control} name="foundedDate" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>설립일</FormLabel>
+                    <FormControl><Input type="date" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="representativePhone" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>대표자 연락처</FormLabel>
+                    <FormControl><Input placeholder="010-0000-0000" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="representativeResidentNumber" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>대표자 주민등록번호</FormLabel>
+                    <FormControl><Input placeholder="000000-0000000" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="certPassword" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>인증서 비밀번호</FormLabel>
+                    <FormControl><Input type="password" placeholder="인증서 비밀번호" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="applicationYear" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>지원연도 *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={2020}
+                        max={2030}
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="operatingAgency" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>운영기관명</FormLabel>
+                    <FormControl><Input placeholder="한국고용복지플러스센터" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="operatingAgencyPhone" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>운영기관 연락처</FormLabel>
+                    <FormControl><Input placeholder="02-0000-0000" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="bankName" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>은행명</FormLabel>
+                    <FormControl><Input placeholder="국민은행" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="accountNumber" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>계좌번호</FormLabel>
+                    <FormControl><Input placeholder="123456-78-901234" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               </div>
               
               <div className="flex justify-end gap-4 border-t pt-4">

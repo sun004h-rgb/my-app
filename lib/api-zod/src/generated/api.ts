@@ -322,6 +322,7 @@ export const GetWorkerResponse = zod.object({
       status: zod.enum([
         "scheduled",
         "applied",
+        "completed",
         "paid",
         "not_applied",
         "resigned",
@@ -423,6 +424,7 @@ export const ListRoundsResponseItem = zod.object({
   status: zod.enum([
     "scheduled",
     "applied",
+    "completed",
     "paid",
     "not_applied",
     "resigned",
@@ -469,6 +471,7 @@ export const UpdateRoundResponse = zod.object({
   status: zod.enum([
     "scheduled",
     "applied",
+    "completed",
     "paid",
     "not_applied",
     "resigned",
@@ -586,6 +589,7 @@ export const GetUpcomingRoundsResponseItem = zod.object({
   status: zod.enum([
     "scheduled",
     "applied",
+    "completed",
     "paid",
     "not_applied",
     "resigned",

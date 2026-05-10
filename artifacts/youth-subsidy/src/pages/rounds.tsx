@@ -19,9 +19,9 @@ export default function Rounds() {
   const { data: businesses } = useListBusinesses({}, { query: { queryKey: getListBusinessesQueryKey() } });
   
   const queryParams = {
-    businessId: businessId !== "all" ? parseInt(businessId) : null,
-    status: status !== "all" ? status : null,
-    roundNumber: roundNumber !== "all" ? parseInt(roundNumber) : null,
+    businessId: businessId !== "all" ? parseInt(businessId) : undefined,
+    status: status !== "all" ? status : undefined,
+    roundNumber: roundNumber !== "all" ? parseInt(roundNumber) : undefined,
   };
 
   const { data: rounds, isLoading } = useListRounds(queryParams, {

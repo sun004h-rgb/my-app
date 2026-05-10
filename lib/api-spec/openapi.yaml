@@ -889,7 +889,7 @@ components:
           type: integer
         status:
           type: string
-          enum: [scheduled, applied, paid, not_applied, resigned, not_applicable]
+          enum: [scheduled, applied, completed, paid, not_applied, resigned, not_applicable]
         notes:
           type: ["string", "null"]
         round2NotApplied:
